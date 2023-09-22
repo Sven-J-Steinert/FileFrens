@@ -17,7 +17,7 @@ port = 4444
 
 SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096*8
-TIMEOUT = 1
+TIMEOUT = 3
 
 def ping(ip):
     try:
