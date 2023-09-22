@@ -24,6 +24,7 @@ def readable(bool):
     else: return None
 
 def update_alias():
+    global alias
     print("Updating alias list",end=" ")
     try:
         response = requests.get(url)
@@ -178,8 +179,6 @@ def main():
     group.add_argument("-s", "--send", nargs=2, metavar=("FILE","IP"), help="Send a file")
     group.add_argument("-r", "--receive", nargs=2, metavar=("PATH","IP"), help="Receive a file")
     
-
-
     args = parser.parse_args()
 
     if args.send:
