@@ -4,6 +4,7 @@ from tqdm import tqdm
 import socket
 import os
 import requests
+import hashlib
 
 def readable(bool):
     if bool: return "\033[32mpassed\033[0m"
@@ -15,8 +16,8 @@ url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.py
 port = 4444
 
 SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = 4096*100
-TIMEOUT = 2
+BUFFER_SIZE = 4096*8
+TIMEOUT = 1
 
 def ping(ip):
     try:
@@ -26,14 +27,35 @@ def ping(ip):
         return True
     except subprocess.CalledProcessError as e:
         return False
+    
+def create_checksum(filename,msg):
+
+    sha1 = hashlib.sha1()
+
+    filesize = os.path.getsize(filename)
+    progress = tqdm(range(filesize),msg,unit="B", unit_scale=True, unit_divisor=1024, leave=False)
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(BUFFER_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+            progress.update(len(data))
+        progress.close()
+
+    checksum = sha1.hexdigest()
+
+    return checksum
 
 def send_file(filename, ip):
 
-    print(f"Sending {filename} to {ip}", end=" ")
     if ip.lower() in alias: ip = alias[ip.lower()]
-    print(ip)
 
     print(f'Network check {readable(ping(ip))}')
+          
+    checksum = create_checksum(filename,'Creating checksum ')
+
+    print(f"Creating checksum \033[32mdone\033[0m SHA1: {checksum}")
 
     sec = 0
     msg = f'Waiting for reciever {sec:5.0f}s '
@@ -52,8 +74,7 @@ def send_file(filename, ip):
             print(msg, end="\r", flush=True)
             pass
 
-    filesize = os.path.getsize(filename)
-    s.send(f"{filename}{SEPARATOR}{filesize}".encode())
+    s.send(f"{filename}{SEPARATOR}{filesize}{SEPARATOR}{checksum}".encode())
     print(f"Sending {filename}")
     progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "rb") as f:
@@ -100,7 +121,7 @@ def receive_file(path, ip):
     # receive the file infos
     # receive using client socket, not server socket
     received = client_socket.recv(BUFFER_SIZE).decode()
-    filename, filesize = received.split(SEPARATOR)
+    filename, filesize, checksum = received.split(SEPARATOR)
     # remove absolute path if there is
     filename = os.path.basename(filename)
     # convert to integer
@@ -124,6 +145,10 @@ def receive_file(path, ip):
     client_socket.close()
     # close the server socket
     s.close()
+
+    file_checksum = create_checksum(f'{path}/{filename}','Validating checksum ')
+    print(f'Validating checksum {readable(checksum == file_checksum)}')
+
 
 def main():
     parser = argparse.ArgumentParser(description="Send or receive files with filefrens")
