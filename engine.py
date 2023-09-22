@@ -1,26 +1,39 @@
 import argparse
 import subprocess
-from tqdm import tqdm
 import socket
 import os
 import requests
 import hashlib
 import json
+from tqdm import tqdm
 
 version = '1.0.0'
+
+url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.json"
+
+port = 4444
+alias = {}
+
+SEPARATOR = "<SEPARATOR>"
+BUFFER_SIZE = 4096*8
+TIMEOUT = 1
 
 def readable(bool):
     if bool: return "\033[32mpassed\033[0m"
     if not bool: return "\033[31mfailed\033[0m"
     else: return None
 
-url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.json"
-
-port = 4444
-
-SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = 4096*8
-TIMEOUT = 1
+def update_alias():
+    print("Updating alias list",end=" ")
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            alias = json.loads(response.text)
+            print(readable(True))
+        else:
+            print(f"Failed to retrieve the file. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
 
 def ping(ip):
     try:
@@ -159,33 +172,23 @@ def receive_file(path, ip):
 
 def main():
     parser = argparse.ArgumentParser(description="Send or receive files with filefrens")
-    parser.add_argument("IP", metavar="IP", help="IP address (required)")
+    parser.add_argument("-v", "--version", action="version", version=f'FileFrens Version {version}')
 
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-s", "--send", nargs=1, metavar=("FILE"), help="Send a file")
-    group.add_argument("-r", "--receive", nargs=1, metavar=("PATH"), help="Receive a file")
-    group.add_argument("-v", "--version", nargs=1, help="show version")
+    group.add_argument("-s", "--send", nargs=2, metavar=("FILE","IP"), help="Send a file")
+    group.add_argument("-r", "--receive", nargs=2, metavar=("PATH","IP"), help="Receive a file")
+    
+
 
     args = parser.parse_args()
 
     if args.send:
-        send_file(args.send[0], args.IP)
+        update_alias()
+        send_file(args.send[0], args.send[1])
     elif args.receive:
-        receive_file(args.receive[0], args.IP)
-    elif args.version:
-        print(f'FileFrens Version {version}')
+        update_alias()
+        receive_file(args.receive[0], args.send[1])
 
-
-print("Updating alias list",end=" ")
-try:
-    response = requests.get(url)
-    if response.status_code == 200:
-        alias = json.loads(response.text)
-        print(readable(True))
-    else:
-        print(f"Failed to retrieve the file. Status code: {response.status_code}")
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
