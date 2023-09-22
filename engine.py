@@ -76,11 +76,27 @@ def receive_file(path, ip):
     # Implement the logic to receive the file from the specified IP address here
     print(f"Receiving file from {ip} to path: {path}")
     print(f'Network check {readable(ping(ip))}')
-    s = socket.socket()
-    s.bind(("0.0.0.0", port))
-    s.listen(5)
-    print(f"[*] Listening ")
-    client_socket, address = s.accept() 
+    
+    sec = 0
+    msg = f'Listening {sec:5.0f}s '
+    print(msg, end="\r", flush=True)
+
+    while True:
+        try:
+            s = socket.socket()
+            s.bind(("0.0.0.0", port))
+            s.settimeout(1)
+            s.listen()
+            client_socket, address = s.accept() 
+            
+            print("Listening \033[32mconnected\033[0m")
+            break
+        except Exception as e:
+            sec += 1
+            msg = f'Listening {sec:5.0f}s '
+            print(msg, end="\r", flush=True)
+            pass
+    
     # if below code is executed, that means the sender is connected
     print(f"[+] {address} is connected.")
     # receive the file infos
