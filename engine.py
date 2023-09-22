@@ -14,7 +14,7 @@ def readable(bool):
     if not bool: return "\033[31mfailed\033[0m"
     else: return None
 
-url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.py"
+url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.json"
 
 port = 4444
 
