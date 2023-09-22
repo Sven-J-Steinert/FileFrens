@@ -16,6 +16,7 @@ port = 4444
 
 SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096
+TIMEOUT = 2
 
 def ping(ip):
     try:
@@ -41,7 +42,7 @@ def send_file(filename, ip):
     while True:
         try:
             s = socket.socket()
-            s.settimeout(1)
+            s.settimeout(TIMEOUT)
             s.connect((ip, port))
             print("Waiting for reciever \033[32mconnected\033[0m")
             break
@@ -85,7 +86,7 @@ def receive_file(path, ip):
         try:
             s = socket.socket()
             s.bind(("0.0.0.0", port))
-            s.settimeout(1)
+            s.settimeout(TIMEOUT)
             s.listen()
             client_socket, address = s.accept() 
             
