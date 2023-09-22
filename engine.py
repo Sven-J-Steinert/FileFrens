@@ -15,7 +15,7 @@ url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.py
 port = 4444
 
 SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = 4096*10
+BUFFER_SIZE = 4096*100
 TIMEOUT = 2
 
 def ping(ip):
@@ -54,8 +54,8 @@ def send_file(filename, ip):
 
     filesize = os.path.getsize(filename)
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
-    print("start sending")
-    progress = tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    print(f"Sending {filename}")
+    progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "rb") as f:
         while True:
             # read the bytes from the file
@@ -70,7 +70,6 @@ def send_file(filename, ip):
             progress.update(len(bytes_read))
 
     s.close()
-
 
 def receive_file(path, ip):
     if ip.lower() in alias: ip = alias[ip.lower()]
@@ -106,7 +105,8 @@ def receive_file(path, ip):
     filename = os.path.basename(filename)
     # convert to integer
     filesize = int(filesize)
-    progress = tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    print(f"Receiving {filename}")
+    progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
     with open(f"{path}/{filename}", "wb") as f:
         while True:
             # read 1024 bytes from the socket (receive)
