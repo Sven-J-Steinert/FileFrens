@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 version = '1.0.0'
 
-url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.json"
+url = "https://raw.githubusercontent.com/Sven-J-Steinert/FileFrens/main/alias.json"
 
 port = 4444
 alias = {}
@@ -38,7 +38,6 @@ def update_alias():
 
 def ping(ip):
     try:
-        # Use the ping command to check if the IP is reachable
         cmd = f'ping -n 1 "{ip}"'
         subprocess.check_output(cmd, stderr=subprocess.STDOUT,shell=True).decode('iso8859-1')
         return True
@@ -98,15 +97,10 @@ def send_file(filename, ip):
     progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
     with open(filename, "rb") as f:
         while True:
-            # read the bytes from the file
             bytes_read = f.read(BUFFER_SIZE)
             if not bytes_read:
-                # file transmitting is done
                 break
-            # we use sendall to assure transimission in 
-            # busy networks
             s.sendall(bytes_read)
-            # update the progress bar
             progress.update(len(bytes_read))
         progress.close()
 
@@ -114,7 +108,7 @@ def send_file(filename, ip):
 
 def receive_file(path, ip):
     if ip.lower() in alias: ip = alias[ip.lower()]
-    # Implement the logic to receive the file from the specified IP address here
+
     print(f"Receiving file from {ip} to path: {path}")
     print(f'Network check {readable(ping(ip))}')
     
@@ -138,33 +132,23 @@ def receive_file(path, ip):
             print(msg, end="\r", flush=True)
             pass
     
-    # receive the file infos
-    # receive using client socket, not server socket
     received = client_socket.recv(BUFFER_SIZE).decode()
     filename, filesize, checksum = received.split(SEPARATOR)
-    # remove absolute path if there is
+
     filename = os.path.basename(filename)
-    # convert to integer
     filesize = int(filesize)
     print(f"Receiving {filename}")
     progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
     with open(f"{path}/{filename}", "wb") as f:
         while True:
-            # read 1024 bytes from the socket (receive)
             bytes_read = client_socket.recv(BUFFER_SIZE)
             if not bytes_read:    
-                # nothing is received
-                # file transmitting is done
                 break
-            # write to the file the bytes we just received
             f.write(bytes_read)
-            # update the progress bar
             progress.update(len(bytes_read))
         progress.close()
 
-    # close the client socket
     client_socket.close()
-    # close the server socket
     s.close()
 
     file_checksum = create_checksum(f'{path}/{filename}','Validating checksum ')
@@ -172,7 +156,7 @@ def receive_file(path, ip):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send or receive files with filefrens")
+    parser = argparse.ArgumentParser(description="Send or receive files with FileFrens")
     parser.add_argument("-v", "--version", action="version", version=f'FileFrens Version {version}')
 
     group = parser.add_mutually_exclusive_group(required=True)
