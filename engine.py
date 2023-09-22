@@ -3,15 +3,16 @@ import subprocess
 from tqdm import tqdm
 import socket
 import os
+import requests
+
+def readable(bool):
+    if bool: return "\033[32mpassed\033[0m"
+    if not bool: return "\033[31mfailed\033[0m"
+    else: return None
+
+url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.py"
 
 port = 4444
-
-alias = {
-    'sven':"172.23.221.18",
-    'niklas':"172.23.54.175",
-    'christoph':"172.23.214.213",
-    'nikolai':"172.23.182.187",
-}
 
 SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096
@@ -24,20 +25,32 @@ def ping(ip):
         return True
     except subprocess.CalledProcessError as e:
         return False
-    
-def readable(bool):
-    if bool: return "passed"
-    if not bool: return "failed"
-    else: return None
 
 def send_file(filename, ip):
+
+    print(f"Sending {filename} to {ip}", end=" ")
     if ip.lower() in alias: ip = alias[ip.lower()]
-    # Implement the logic to send the file to the specified IP address here
-    print(f"Sending {filename} to {ip}")
+    print(ip)
+
     print(f'Network check {readable(ping(ip))}')
-    s = socket.socket()
-    s.connect((ip, port))
-    print("connected")
+
+    sec = 0
+    msg = f'Waiting for reciever {sec:5.0f}s '
+    print(msg, end="\r", flush=True)
+
+    while True:
+        try:
+            s = socket.socket()
+            s.settimeout(1)
+            s.connect((ip, port))
+            print("Waiting for reciever \033[32mconnected\033[0m")
+            break
+        except Exception as e:
+            sec += 1
+            msg = f'Waiting for reciever {sec:5.0f}s '
+            print(msg, end="\r", flush=True)
+            pass
+
     filesize = os.path.getsize(filename)
     s.send(f"{filename}{SEPARATOR}{filesize}".encode())
     print("start sending")
@@ -109,6 +122,19 @@ def main():
         send_file(args.send[0], args.send[1])
     elif args.receive:
         receive_file(args.receive[0], args.receive[1])
+
+
+print("Updating alias list",end=" ")
+try:
+    response = requests.get(url)
+    if response.status_code == 200:
+        file_contents = str(response.text)
+        exec(file_contents)
+        print(readable(True))
+    else:
+        print(f"Failed to retrieve the file. Status code: {response.status_code}")
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
