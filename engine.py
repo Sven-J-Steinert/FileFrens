@@ -5,6 +5,9 @@ import socket
 import os
 import requests
 import hashlib
+import json
+
+version = '1.0.0'
 
 def readable(bool):
     if bool: return "\033[32mpassed\033[0m"
@@ -156,24 +159,28 @@ def receive_file(path, ip):
 
 def main():
     parser = argparse.ArgumentParser(description="Send or receive files with filefrens")
+    parser.add_argument("IP", metavar="IP", help="IP address (required)")
+
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-s", "--send", nargs=2, metavar=("FILE", "IP"), help="Send a file")
-    group.add_argument("-r", "--receive", nargs=2, metavar=("PATH", "IP"), help="Receive a file")
+    group.add_argument("-s", "--send", nargs=1, metavar=("FILE"), help="Send a file")
+    group.add_argument("-r", "--receive", nargs=1, metavar=("PATH"), help="Receive a file")
+    group.add_argument("-v", "--version", nargs=1, help="show version")
 
     args = parser.parse_args()
 
     if args.send:
-        send_file(args.send[0], args.send[1])
+        send_file(args.send[0], args.IP)
     elif args.receive:
-        receive_file(args.receive[0], args.receive[1])
+        receive_file(args.receive[0], args.IP)
+    elif args.version:
+        print(f'FileFrens Version {version}')
 
 
 print("Updating alias list",end=" ")
 try:
     response = requests.get(url)
     if response.status_code == 200:
-        file_contents = str(response.text)
-        exec(file_contents)
+        alias = json.loads(response.text)
         print(readable(True))
     else:
         print(f"Failed to retrieve the file. Status code: {response.status_code}")
