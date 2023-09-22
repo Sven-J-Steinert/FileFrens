@@ -187,7 +187,7 @@ def main():
         send_file(args.send[0], args.send[1])
     elif args.receive:
         update_alias()
-        receive_file(args.receive[0], args.send[1])
+        receive_file(args.receive[0], args.receive[1])
 
 
 if __name__ == "__main__":
