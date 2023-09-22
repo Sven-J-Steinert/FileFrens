@@ -15,7 +15,7 @@ url = "https://raw.githubusercontent.com/Sven-J-Steinert/Filefrens/main/alias.py
 port = 4444
 
 SEPARATOR = "<SEPARATOR>"
-BUFFER_SIZE = 4096
+BUFFER_SIZE = 4096*10
 TIMEOUT = 2
 
 def ping(ip):
