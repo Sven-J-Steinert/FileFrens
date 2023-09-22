@@ -74,6 +74,8 @@ def send_file(filename, ip):
             print(msg, end="\r", flush=True)
             pass
 
+    filesize = os.path.getsize(filename)
+
     s.send(f"{filename}{SEPARATOR}{filesize}{SEPARATOR}{checksum}".encode())
     print(f"Sending {filename}")
     progress = tqdm(range(filesize), unit="B", unit_scale=True, unit_divisor=1024)
