@@ -89,7 +89,7 @@ def receive_file(path, ip):
             s.listen()
             client_socket, address = s.accept() 
             
-            print("Listening \033[32mconnected\033[0m")
+            print(f"Listening \033[32mconnected\033[0m {address}")
             break
         except Exception as e:
             sec += 1
@@ -97,8 +97,6 @@ def receive_file(path, ip):
             print(msg, end="\r", flush=True)
             pass
     
-    # if below code is executed, that means the sender is connected
-    print(f"[+] {address} is connected.")
     # receive the file infos
     # receive using client socket, not server socket
     received = client_socket.recv(BUFFER_SIZE).decode()
@@ -108,7 +106,7 @@ def receive_file(path, ip):
     # convert to integer
     filesize = int(filesize)
     progress = tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, "wb") as f:
+    with open(f"{path}/{filename}", "wb") as f:
         while True:
             # read 1024 bytes from the socket (receive)
             bytes_read = client_socket.recv(BUFFER_SIZE)
