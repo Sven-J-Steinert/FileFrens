@@ -91,6 +91,7 @@ def send_file(filename, ip):
             s.sendall(bytes_read)
             # update the progress bar
             progress.update(len(bytes_read))
+        progress.close()
 
     s.close()
 
@@ -142,6 +143,7 @@ def receive_file(path, ip):
             f.write(bytes_read)
             # update the progress bar
             progress.update(len(bytes_read))
+        progress.close()
 
     # close the client socket
     client_socket.close()
