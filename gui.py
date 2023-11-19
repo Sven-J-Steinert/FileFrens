@@ -44,39 +44,37 @@ class MyApp:
         self.receiving_radio.grid(row=0, column=1, padx=5)
         self.mode_frame.grid(row=0, column=0, pady=10, columnspan=2)
 
-        # Entry widget for IP address
-        self.ip_frame = tk.Frame(root)
-        self.ip_label = tk.Label(self.ip_frame, text="Enter IP:")
-        self.ip_label.grid(row=1, column=0, padx=5)
-        self.ip_entry = tk.Entry(self.ip_frame)
-        self.ip_entry.grid(row=1, column=1, padx=5)
-        self.ip_frame.grid(row=1, column=0, pady=5, columnspan=2)
+        # Entry widget for IP address and Dropdown menu for alias selection
+        self.ip_alias_frame = tk.Frame(root)
 
-        # Dropdown menu for alias selection
-        self.alias_frame = tk.Frame(root)
-        self.alias_label = tk.Label(self.alias_frame, text="Select Alias:")
-        self.alias_label.grid(row=2, column=0, padx=5)
+        self.alias_label = tk.Label(self.ip_alias_frame, text="IP:")
+        self.alias_label.grid(row=1, column=2, padx=5)
+
         self.alias_var = tk.StringVar()
-        self.alias_dropdown = ttk.Combobox(self.alias_frame, textvariable=self.alias_var)
-        self.alias_dropdown.grid(row=2, column=1, padx=5)
+        self.alias_dropdown = ttk.Combobox(self.ip_alias_frame, textvariable=self.alias_var, width=9)  # Set width here
+        self.alias_dropdown.grid(row=1, column=1, padx=5)
         self.alias_dropdown.bind("<<ComboboxSelected>>", self.update_ip_entry)
-        self.alias_frame.grid(row=2, column=0, pady=10, columnspan=2)
+
+        self.ip_entry = tk.Entry(self.ip_alias_frame, width=13)
+        self.ip_entry.grid(row=1, column=3, padx=5)
+
+        self.ip_alias_frame.grid(row=1, column=0, pady=5, columnspan=2)
 
         # File selection button
         self.file_btn = tk.Button(root, text="Select File", command=self.select_file)
-        self.file_btn.grid(row=3, column=0, padx=5, pady=10)
+        self.file_btn.grid(row=2, column=0, padx=5, pady=10)
 
         # Destination selection button
         self.dest_btn = tk.Button(root, text="Select Destination", command=self.select_destination, state=tk.DISABLED)
-        self.dest_btn.grid(row=3, column=1, padx=5, pady=10)
+        self.dest_btn.grid(row=2, column=1, padx=5, pady=10)
 
         # Selected file information label
         self.selected_file_label = tk.Label(root, text="Selected File: None")
-        self.selected_file_label.grid(row=4, column=0, columnspan=2, pady=5)
+        self.selected_file_label.grid(row=3, column=0, columnspan=2, pady=5)
 
         # Run button
         self.run_btn = tk.Button(root, text="Run FileFrens", command=self.run_filefrens)
-        self.run_btn.grid(row=6, column=0, pady=10, columnspan=2)
+        self.run_btn.grid(row=4, column=0, pady=10, columnspan=2)
 
         # Call the update_alias function to fetch alias-IP mappings
         self.update_alias()
@@ -104,33 +102,37 @@ class MyApp:
 
     def run_filefrens(self):
         try:
-            if hasattr(self, 'file_path'):
-                mode = self.mode_var.get()
-                ip = self.ip_entry.get()
+            mode = self.mode_var.get()
+            ip = self.ip_entry.get()
 
-                if not mode or not ip:
-                    self.open_cmd_window("Please select mode and enter IP first.")
-                    return
+            if not mode or not ip:
+                self.open_cmd_window('echo "Please select mode and enter IP first."')
+                return
 
-                if mode == "sending":
-                    command = f"python filefrens.py -s {self.file_path} {ip}"
-                elif mode == "receiving":
-                    if hasattr(self, 'dest_path'):
-                        command = f"python filefrens.py -r {self.dest_path} {ip}"
-                    else:
-                        self.open_cmd_window("Please select a destination folder.")
-                        return
+            if mode == "sending":
+                if hasattr(self, 'file_path'):
+                    path = self.file_path
+                    command = f'python filefrens.py -s "{path}" {ip}'
                 else:
-                    self.open_cmd_window("Invalid mode selected.")
+                    self.open_cmd_window('echo "Please select a file first."')
                     return
-
-                self.open_cmd_window(command)
-
+            elif mode == "receiving":
+                if hasattr(self, 'dest_path'):
+                    path = self.dest_path
+                    command = f'python filefrens.py -r "{path}" {ip}'
+                else:
+                    self.open_cmd_window('echo "Please select a destination folder."')
+                    return
             else:
-                self.open_cmd_window("Please select a file first.")
+                self.open_cmd_window('echo "Invalid mode selected."')
+                return
+
+            self.open_cmd_window(command)
 
         except Exception as e:
-            self.open_cmd_window(f"An error occurred: {str(e)}")
+            self.open_cmd_window(f'echo "An error occurred: {str(e)}"')
+
+
 
     def open_cmd_window(self, command):
         subprocess.Popen(["start", "cmd", "/k", command], shell=True)
