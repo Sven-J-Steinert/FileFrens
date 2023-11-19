@@ -112,14 +112,14 @@ class MyApp:
             if mode == "sending":
                 if hasattr(self, 'file_path'):
                     path = self.file_path
-                    command = f'python filefrens.py -s "{path}" {ip}'
+                    command = f'python filefrens.py -s {path} {ip}'
                 else:
                     self.open_cmd_window('echo "Please select a file first."')
                     return
             elif mode == "receiving":
                 if hasattr(self, 'dest_path'):
                     path = self.dest_path
-                    command = f'python filefrens.py -r "{path}" {ip}'
+                    command = f'python filefrens.py -r {path} {ip}'
                 else:
                     self.open_cmd_window('echo "Please select a destination folder."')
                     return
